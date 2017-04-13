@@ -15,7 +15,6 @@ module.exports = (function() {
 	$window = $( window ),
 	$body = $( 'BODY' ),
 	// transitions support
-	supportTransitions = Modernizr.csstransitions,
 	// current item's index
 	current = -1,
 	// window width and height
