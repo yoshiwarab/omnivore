@@ -21,6 +21,7 @@ body {
 	font-family: Helvetica;
 	min-width: 1em;
 	min-height: 1em;
+	cursor: pointer;
 }
 
 .overlay-window {
