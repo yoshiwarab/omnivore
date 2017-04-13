@@ -25867,15 +25867,6 @@ console.log(Slider);
 module.exports = (function() {
 
 	var $items = $( '.projects > .project' ),
-	transEndEventNames = {
-		'WebkitTransition' : 'webkitTransitionEnd',
-		'MozTransition' : 'transitionend',
-		'OTransition' : 'oTransitionEnd',
-		'msTransition' : 'MSTransitionEnd',
-		'transition' : 'transitionend'
-	},
-	// transition end event name
-	transEndEventName = transEndEventNames[ Modernizr.prefixed( 'transition' ) ],
 	// window and body elements
 	$window = $( window ),
 	$body = $( 'BODY' ),
