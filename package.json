@@ -12,6 +12,7 @@
     "require": "^2.4.20",
     "requirejs": "^2.3.3",
     "sat": "^0.6.0",
+    "scrollmagic": "^2.0.5",
     "velocity-animate": "^1.5.0"
   },
   "devDependencies": {
@@ -19,8 +20,7 @@
     "gulp": "^3.9.1"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC"

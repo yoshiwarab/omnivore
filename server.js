@@ -4,6 +4,7 @@ var babelify = require('babelify')
 budo('./src/index.js', {
   live: true,             // setup live reload
   port: 9000,             // use this port
+  watchGlob: '**/*.{html,css,js}',
   browserify: {
     transform: babelify.configure({
       presets: ["es2015"]
