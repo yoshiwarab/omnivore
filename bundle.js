@@ -25771,18 +25771,20 @@ return hooks;
  will produce an inaccurate conversion value. The same issue exists with the cx/cy attributes of SVG circles and ellipses. */
 
 },{}],43:[function(require,module,exports){
+'use strict';
+
 var moment = require('moment-timezone');
 var expand = require('./projectExpandMask.js');
 
 var theDate;
-var colorNYC = {r:154, g:184, b:206};
-var colorLA = {r:243, g:129, b:153};
+var colorNYC = { r: 154, g: 184, b: 206 };
+var colorLA = { r: 243, g: 129, b: 153 };
 var mouseX, mouseY, timeIncrementer;
-var speedTime = 100;//milliseconds to increment
+var speedTime = 100; //milliseconds to increment
 var currentColorWheel = [[45, 57, 89], [97, 112, 164], [222, 205, 242], [255, 229, 210], [255, 224, 134], [255, 229, 251], [210, 196, 234], [82, 98, 146]];
 
 function ready(fn) {
-	if (document.readyState != 'loading'){
+	if (document.readyState != 'loading') {
 		fn();
 	} else {
 		document.addEventListener('DOMContentLoaded', fn);
@@ -25794,11 +25796,11 @@ ready(function () {
 	var body = document.querySelector('body');
 	mouseX = 0;
 	mouseY = 0;
-	body.addEventListener('mousemove', function(e) {
+	body.addEventListener('mousemove', function (e) {
 		mouseX = e.pageX;
 		mouseY = e.pageY;
 		followCursor();
-	})
+	});
 
 	function outerWidth(el) {
 		var width = el.offsetWidth;
@@ -25814,17 +25816,20 @@ ready(function () {
 		var cursorR = interpolate(colorLA.r, colorNYC.r, percentX);
 		var cursorG = interpolate(colorLA.g, colorNYC.g, percentX);
 		var cursorB = interpolate(colorLA.b, colorNYC.b, percentX);
-		body.style.background = '-webkit-radial-gradient(' + mouseX + 'px ' + mouseY + 'px, 1000px 1000px, rgb(' + cursorR + ',' + cursorG + ',' + cursorB + ') 0%,rgb(237,243,216) 100%)'
+		body.style.background = '-webkit-radial-gradient(' + mouseX + 'px ' + mouseY + 'px, 1000px 1000px, rgb(' + cursorR + ',' + cursorG + ',' + cursorB + ') 0%,rgb(237,243,216) 100%)';
 	}
 
 	setInterval(updateGradient, speedTime);
 
-	function updateGradient() { //determine RGB colors from an 8 point color wheel
+	function updateGradient() {
+		//determine RGB colors from an 8 point color wheel
 		var time = moment().tz("America/New_York");
 
 		var timeNYC = parseInt(time.format('H')) * 60 + parseInt(time.format('m'));
 		var timeLA = timeNYC >= 180 ? timeNYC - 180 : 1440 - (180 - timeNYC);
-		if (timeLA >= 1440) { timeLA = 0; }
+		if (timeLA >= 1440) {
+			timeLA = 0;
+		}
 		var NYCpercent = currentColorWheel.length * timeNYC / 1440;
 		var NYCtripletIndex1 = Math.floor(NYCpercent);
 		var NYCtripletIndex2 = NYCtripletIndex1 < currentColorWheel.length - 1 ? NYCtripletIndex1 + 1 : 0;
@@ -25835,8 +25840,8 @@ ready(function () {
 		var LAtripletIndex2 = LAtripletIndex1 < currentColorWheel.length - 1 ? LAtripletIndex1 + 1 : 0;
 		var LAcolorInterpolate = LApercent % 1;
 
-		var i=0;
-		for (let color in colorNYC) {
+		var i = 0;
+		for (var color in colorNYC) {
 			colorNYC[color] = interpolate(currentColorWheel[NYCtripletIndex1][i], currentColorWheel[NYCtripletIndex2][i], NYCcolorInterpolate);
 			colorLA[color] = interpolate(currentColorWheel[LAtripletIndex1][i], currentColorWheel[LAtripletIndex2][i], LAcolorInterpolate);
 			i++;
@@ -25845,15 +25850,16 @@ ready(function () {
 	}
 
 	function interpolate(color1, color2, percent) {
-		let x = Math.round(color1 - (color1 - color2) * percent);
+		var x = Math.round(color1 - (color1 - color2) * percent);
 		return x;
 	}
 
 	expand.init();
-
 });
 
 },{"./projectExpandMask.js":44,"moment-timezone":38}],44:[function(require,module,exports){
+'use strict';
+
 // var $ = require('jquery');
 window.jQuery = window.$ = require('jquery');
 var velocity = require('velocity-animate');
@@ -25864,59 +25870,60 @@ var Slider = require('./slider.js');
 
 console.log(Slider);
 
-module.exports = (function() {
+module.exports = function () {
 
-	var $items = $( '.projects > .project' ),
+	var $items = $('.projects > .project'),
+
 	// window and body elements
-	$window = $( window ),
-	$body = $( 'BODY' ),
+	$window = $(window),
+	    $body = $('BODY'),
+
 	// transitions support
 	// current item's index
 	current = -1,
+
 	// window width and height
 	winsize = getWindowSize(),
-
-	keyframer = new CSSKeyframer({ /* options */ }),
-
-	prefixer = new Prefixer();
+	    keyframer = new CSSKeyframer({/* options */}),
+	    prefixer = new Prefixer();
 
 	var slider;
 
-	function init( options ) {
+	function init(options) {
 		initEvents();
 	}
 
 	function initEvents() {
 
-		$items.each( function() {
+		$items.each(function () {
 
-			var $item = $( this ),
-			$close = $item.find( 'span.close' ),
-			$overlay = $item.children( 'div.overlay' ),
-			$title = $item.find( '.visible-item span'),
-			$visible = $item.find('.visible-item'),
-			$slides = $item.find('.slides');
+			var $item = $(this),
+			    $close = $item.find('span.close'),
+			    $overlay = $item.children('div.overlay'),
+			    $title = $item.find('.visible-item span'),
+			    $visible = $item.find('.visible-item'),
+			    $slides = $item.find('.slides');
 
-			$item.on( 'click', function() {
-				if( $item.data( 'isExpanded' ) ) {
+			$item.on('click', function () {
+				if ($item.data('isExpanded')) {
 					return false;
 				}
-				$item.data( 'isExpanded', true );
+				$item.data('isExpanded', true);
 
-				$body.on('DOMMouseScroll mousewheel', function(e) {
+				$body.on('DOMMouseScroll mousewheel', function (e) {
 					e.preventDefault();
-				})
+				});
 				// save current item's index
 				current = $item.index();
 
 				// Placement of item on the screen
-				var layoutProp = getItemLayoutProp( $item );
+				var layoutProp = getItemLayoutProp($item);
 
 				// Initial clip-path immediately below item title
-				var top = new SAT.Vector(winsize.width/2, layoutProp.top+layoutProp.height),
-				right = new SAT.Vector(1, 1),
-				bottom = new SAT.Vector(0, 2),
-				left = new SAT.Vector(-1, 1);
+				var top = new SAT.Vector(winsize.width / 2, layoutProp.top + layoutProp.height),
+				    right = new SAT.Vector(1, 1),
+				    bottom = new SAT.Vector(0, 2),
+				    left = new SAT.Vector(-1, 1);
 
 				// Start diamond SAT.Polygon
 				var startDiamond = new SAT.Polygon(top, [new SAT.Vector(), right, bottom, left]);
@@ -25933,13 +25940,13 @@ module.exports = (function() {
 				var end = createDiamondClipPath(endDiamond);
 
 				// The relative size of the diamond where the top hits the top of the window to the final diamond
-				var topPercent = '' + (((topDiamond.pos.y + topDiamond.points[2].y) / (endDiamond.pos.y + endDiamond.points[2].y)).toFixed(2) * 100) + '%';
-								// var topPercent = ((topDiamond.pos.y + topDiamond.points[2].y) / (endDiamond.pos.y + endDiamond.points[2].y)).toFixed(2);
+				var topPercent = '' + ((topDiamond.pos.y + topDiamond.points[2].y) / (endDiamond.pos.y + endDiamond.points[2].y)).toFixed(2) * 100 + '%';
+				// var topPercent = ((topDiamond.pos.y + topDiamond.points[2].y) / (endDiamond.pos.y + endDiamond.points[2].y)).toFixed(2);
 
 
 				var thisIdx = $items.index($item);
-				var prevLp = getItemLayoutProp($($items[thisIdx-1] || $item));
-				var nextLp = getItemLayoutProp($($items[thisIdx+1] || $item));
+				var prevLp = getItemLayoutProp($($items[thisIdx - 1] || $item));
+				var nextLp = getItemLayoutProp($($items[thisIdx + 1] || $item));
 
 				var animationTime = '2000ms';
 				var timingFunction = 'ease';
@@ -25947,10 +25954,10 @@ module.exports = (function() {
 				$overlay[0].style['pointer-events'] = 'auto';
 
 				var expandDiamondReveal = {
-					'0%' : prefixer.prefix({
-						 opacity: 1,
-						 clipPath: start,
-						 zIndex: 999
+					'0%': prefixer.prefix({
+						opacity: 1,
+						clipPath: start,
+						zIndex: 999
 					}),
 					'99%': prefixer.prefix({
 						clipPath: end
@@ -25961,16 +25968,16 @@ module.exports = (function() {
 						width: '100%',
 						height: '100%'
 					})
-				}
+				};
 
 				expandDiamondReveal[topPercent] = {
 					clipPath: top
-				}
+				};
 
 				// CSS property will be added vendor-prefix is automatically!
 				keyframer.register("expandDiamondReveal", expandDiamondReveal);
 
-				$overlay[0].style[keyframer.animationProp.js] = "expandDiamondReveal "+ animationTime + " forwards " + timingFunction;
+				$overlay[0].style[keyframer.animationProp.js] = "expandDiamondReveal " + animationTime + " forwards " + timingFunction;
 
 				/*******************************************************/
 
@@ -25993,7 +26000,7 @@ module.exports = (function() {
 						position: 'fixed',
 						left: 0,
 						right: 0,
-						margin: '0 auto',
+						margin: '0 auto'
 					}),
 					'100%': prefixer.prefix({
 						position: 'fixed',
@@ -26003,20 +26010,20 @@ module.exports = (function() {
 						margin: '0 auto',
 						zIndex: 10000
 					})
-				}
+				};
 				moveUp[topPercent] = {
 					left: 0,
 					right: 0,
 					margin: '0 auto',
 					top: '1em'
-				}
+				};
 				keyframer.register("moveUp", moveUp);
 
 				$title[0].style[keyframer.animationProp.js] = "moveUp " + animationTime + " forwards " + timingFunction;
 
-				moveUp[topPercent] = {
-					transform: `translateY(${layoutProp.top}px)`
-				}
+				// moveUp[topPercent] = {
+				// 	transform: `translateY(${layoutProp.top}px)`
+				// }
 
 				/*******************************************************/
 
@@ -26027,14 +26034,14 @@ module.exports = (function() {
 					},
 					'100%': {
 						opacity: '0',
-						transform: `translateY(${endDiamond.pos.y}px)`
+						transform: 'translateY(' + endDiamond.pos.y + 'px)'
 					}
 				};
 
 				exitUp[topPercent] = {
-					transform: `translateY(${prevLp.top + prevLp.height})`,
+					transform: 'translateY(' + (prevLp.top + prevLp.height) + ')',
 					opacity: '0.4'
-				}
+				};
 
 				keyframer.register("exitUp", exitUp);
 
@@ -26047,11 +26054,11 @@ module.exports = (function() {
 					},
 					'100%': {
 						opacity: '0',
-						transform: `translateY(${endDiamond.pos.y + endDiamond.points[2].y}px)`
+						transform: 'translateY(' + (endDiamond.pos.y + endDiamond.points[2].y) + 'px)'
 					}
 				};
 				exitDown[topPercent] = {
-					transform: `translateY(${topDiamond.pos.y + topDiamond.points[2].y}px)`,
+					transform: 'translateY(' + (topDiamond.pos.y + topDiamond.points[2].y) + 'px)',
 					opacity: '0'
 				};
 
@@ -26060,7 +26067,7 @@ module.exports = (function() {
 				/*******************************************************/
 
 				for (var i = 0; i < $items.length; i++) {
-					var item = $items[i]
+					var item = $items[i];
 					if (i == thisIdx) {
 						continue;
 					} else if (i < thisIdx) {
@@ -26070,18 +26077,17 @@ module.exports = (function() {
 					}
 				}
 
-				$overlay.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {
+				$overlay.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function () {
 					$overlay.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
 					$body.off('DOMMouseScroll mousewheel');
 					slider = new Slider($slides);
 				});
-
 			});
 
-			$close.on( 'click', function(event) {
-				$body.on('DOMMouseScroll mousewheel', function(e) {
+			$close.on('click', function (event) {
+				$body.on('DOMMouseScroll mousewheel', function (e) {
 					e.preventDefault();
-				})
+				});
 
 				var diamonds = getCenterScreenDiamonds();
 				// Diamond when the top point hits the top of the screen
@@ -26090,12 +26096,12 @@ module.exports = (function() {
 				var startDiamond = diamonds.contain;
 
 				// Get inital placement of item
-				var layoutProp = getItemLayoutProp( $item );
+				var layoutProp = getItemLayoutProp($item);
 
-				var top = new SAT.Vector(winsize.width/2, layoutProp.top+layoutProp.height),
-				right = new SAT.Vector(1, 1),
-				bottom = new SAT.Vector(0, 2),
-				left = new SAT.Vector(-1, 1);
+				var top = new SAT.Vector(winsize.width / 2, layoutProp.top + layoutProp.height),
+				    right = new SAT.Vector(1, 1),
+				    bottom = new SAT.Vector(0, 2),
+				    left = new SAT.Vector(-1, 1);
 
 				var endDiamond = new SAT.Polygon(top, [new SAT.Vector(), right, bottom, left]);
 
@@ -26104,8 +26110,8 @@ module.exports = (function() {
 				var end = createDiamondClipPath(endDiamond);
 
 				var thisIdx = $items.index($item);
-				var prevLp = getItemLayoutProp($($items[thisIdx-1] || $item));
-				var nextLp = getItemLayoutProp($($items[thisIdx+1] || $item));
+				var prevLp = getItemLayoutProp($($items[thisIdx - 1] || $item));
+				var nextLp = getItemLayoutProp($($items[thisIdx + 1] || $item));
 
 				var animationTime = '2000ms';
 				var timingFunction = 'ease';
@@ -26113,7 +26119,7 @@ module.exports = (function() {
 				$overlay[0].style['pointer-events'] = 'none';
 				// CSS property will be added vendor-prefix is automatically!
 				keyframer.register("retractDiamondReveal", {
-					'0%' : {
+					'0%': {
 						clipPath: start,
 						opacity: 1,
 						zIndex: 1
@@ -26125,11 +26131,11 @@ module.exports = (function() {
 					}
 				});
 
-				$overlay[0].style[keyframer.animationProp.js] = "retractDiamondReveal "+ animationTime + " forwards " + timingFunction;
+				$overlay[0].style[keyframer.animationProp.js] = "retractDiamondReveal " + animationTime + " forwards " + timingFunction;
 
 				/*******************************************************/
 
-				var topPercent = '' + ((1 - (((topDiamond.pos.y + topDiamond.points[2].y) / (startDiamond.pos.y + startDiamond.points[2].y)).toFixed(2))) * 100) + '%';
+				var topPercent = '' + (1 - ((topDiamond.pos.y + topDiamond.points[2].y) / (startDiamond.pos.y + startDiamond.points[2].y)).toFixed(2)) * 100 + '%';
 				var visibleLayoutProp = getItemLayoutProp($visible);
 				var moveDown = {
 					'0%': {
@@ -26140,27 +26146,27 @@ module.exports = (function() {
 						zIndex: 1000
 					},
 					'100%': {
-						top: visibleLayoutProp.top + 5 +  'px',
+						top: visibleLayoutProp.top + 5 + 'px',
 						left: 0,
 						right: 0,
 						margin: '0 auto',
 						zIndex: 10000
 					}
-				}
+				};
 				moveDown[topPercent] = {
 					top: '1em',
 					left: 0,
 					right: 0,
 					margin: '0 auto'
-				}
+				};
 
 				keyframer.register("moveDown", moveDown);
 
-				$title.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {
+				$title.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function () {
 					$body.css('overflow-y', 'hidden');
 					$title[0].style['position'] = 'static';
 					$title.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
-				})
+				});
 
 				$title[0].style[keyframer.animationProp.js] = "moveDown " + animationTime + " " + timingFunction + " forwards";
 
@@ -26169,7 +26175,7 @@ module.exports = (function() {
 				var enterFromAbove = {
 					'0%': {
 						opacity: '0',
-						transform: `translateY(${startDiamond.pos.y}px)`
+						transform: 'translateY(' + startDiamond.pos.y + 'px)'
 					},
 					'100%': {
 						opacity: 1,
@@ -26182,7 +26188,7 @@ module.exports = (function() {
 				var enterFromBelow = {
 					'0%': {
 						opacity: 0,
-						transform: `translateY(${startDiamond.pos.y + startDiamond.points[2].y}px)`
+						transform: 'translateY(' + (startDiamond.pos.y + startDiamond.points[2].y) + 'px)'
 					},
 					'100%': {
 						opacity: 1,
@@ -26193,7 +26199,7 @@ module.exports = (function() {
 				keyframer.register("enterFromBelow", enterFromBelow);
 
 				for (var i = 0; i < $items.length; i++) {
-					var item = $items[i]
+					var item = $items[i];
 					if (i == thisIdx) {
 						continue;
 					} else if (i < thisIdx) {
@@ -26203,51 +26209,47 @@ module.exports = (function() {
 					}
 				}
 
-				$overlay.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function(e) {
+				$overlay.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function (e) {
 					$item.data('isExpanded', false);
-					$items.each(function() {
+					$items.each(function () {
 						this.style[keyframer.animationProp.js] = "";
-					})
+					});
 					$overlay[0].style[keyframer.animationProp.js] = "";
 					$body.off('DOMMouseScroll mousewheel');
 
 					$overlay.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
 				});
-
-
 			});
 		});
 
-		$( window ).on( 'debouncedresize', function() {
+		$(window).on('debouncedresize', function () {
 			winsize = getWindowSize();
 			// todo : cache the current item
-			if( current !== -1 ) {
-				$items.eq( current ).children( 'div.overlay' ).css( 'clip', 'rect(0px ' + winsize.width + 'px ' + winsize.height + 'px 0px)' );
+			if (current !== -1) {
+				$items.eq(current).children('div.overlay').css('clip', 'rect(0px ' + winsize.width + 'px ' + winsize.height + 'px 0px)');
 			}
-		} );
-
+		});
 	}
 
-	function getItemLayoutProp( $item ) {
+	function getItemLayoutProp($item) {
 
 		var scrollT = $window.scrollTop(),
-		scrollL = $window.scrollLeft(),
-		itemOffset = $item.offset();
+		    scrollL = $window.scrollLeft(),
+		    itemOffset = $item.offset();
 
 		console.log({
-			left : itemOffset.left - scrollL,
-			top : itemOffset.top - scrollT,
-			width : $item.outerWidth(),
-			height : $item.outerHeight()
-		})
+			left: itemOffset.left - scrollL,
+			top: itemOffset.top - scrollT,
+			width: $item.outerWidth(),
+			height: $item.outerHeight()
+		});
 
 		return {
-			left : itemOffset.left - scrollL,
-			top : itemOffset.top - scrollT,
-			width : $item.outerWidth(),
-			height : $item.outerHeight()
+			left: itemOffset.left - scrollL,
+			top: itemOffset.top - scrollT,
+			width: $item.outerWidth(),
+			height: $item.outerHeight()
 		};
-
 	}
 
 	function createDiamondClipPath(diamond) {
@@ -26256,30 +26258,25 @@ module.exports = (function() {
 		var bottom = vectorAdd(diamond.pos, diamond.points[2]);
 		var left = vectorAdd(diamond.pos, diamond.points[3]);
 
-		return `polygon(${top.x}px ${top.y}px, ${right.x}px ${right.y}px, ${bottom.x}px ${bottom.y}px, ${left.x}px ${left.y}px)`
+		return 'polygon(' + top.x + 'px ' + top.y + 'px, ' + right.x + 'px ' + right.y + 'px, ' + bottom.x + 'px ' + bottom.y + 'px, ' + left.x + 'px ' + left.y + 'px)';
 	}
 
 	function getCenterScreenDiamonds() {
 		var increment = 20;
 		var windowPoly = new SAT.Box(new SAT.Vector(0, 0), getWindowSize().width, getWindowSize().height).toPolygon();
 
-		var top = new SAT.Vector(winsize.width/2, winsize.height/2+1),
-		right = new SAT.Vector(1, 1),
-		bottom = new SAT.Vector(0, 2),
-		left = new SAT.Vector(-1, 1);
+		var top = new SAT.Vector(winsize.width / 2, winsize.height / 2 + 1),
+		    right = new SAT.Vector(1, 1),
+		    bottom = new SAT.Vector(0, 2),
+		    left = new SAT.Vector(-1, 1);
 
 		var start = new SAT.Polygon(top, [new SAT.Vector(), right, bottom, left]);
 		var contain = copyPolygon(start);
 		var fill;
 
 		// [(0, 0), (1, 1), (0, 2), (-1, 1)]
-		while(true) {
-			contain = new SAT.Polygon(contain.pos.add(new SAT.Vector(0, -increment)), [
-				new SAT.Vector(),
-				contain.points[1].add(new SAT.Vector(increment, increment)),
-				contain.points[2].add(new SAT.Vector(0, increment*2)),
-				contain.points[3].add(new SAT.Vector(-increment, increment))
-			]);
+		while (true) {
+			contain = new SAT.Polygon(contain.pos.add(new SAT.Vector(0, -increment)), [new SAT.Vector(), contain.points[1].add(new SAT.Vector(increment, increment)), contain.points[2].add(new SAT.Vector(0, increment * 2)), contain.points[3].add(new SAT.Vector(-increment, increment))]);
 
 			if (!fill && Math.floor(contain.pos.y <= 0)) {
 				fill = copyPolygon(contain);
@@ -26288,7 +26285,7 @@ module.exports = (function() {
 			var response = new SAT.Response();
 			SAT.testPolygonPolygon(contain, windowPoly, response);
 			if (response.bInA) {
-				return { start: start, fill: fill, contain: contain }
+				return { start: start, fill: fill, contain: contain };
 			}
 		}
 	}
@@ -26301,59 +26298,81 @@ module.exports = (function() {
 	function copyPolygon(polygon) {
 		var pos = new SAT.Vector().copy(polygon.pos);
 		var points = [];
-		for (var point of polygon.points) {
-			var copy = new SAT.Vector().copy(point);
-			points.push(copy);
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = polygon.points[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var point = _step.value;
+
+				var copy = new SAT.Vector().copy(point);
+				points.push(copy);
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
 		}
+
 		return new SAT.Polygon(pos, points);
 	}
 
 	function getWindowSize() {
-		$body.css( 'overflow-y', 'hidden' );
-		var w = $window.width(), h =  $window.height();
-		if( current === -1 ) {
-			$body.css( 'overflow-y', 'auto' );
+		$body.css('overflow-y', 'hidden');
+		var w = $window.width(),
+		    h = $window.height();
+		if (current === -1) {
+			$body.css('overflow-y', 'auto');
 		}
-		return { width : w, height : h };
+		return { width: w, height: h };
 	}
 
-	return { init : init };
-
-})();
+	return { init: init };
+}();
 
 },{"./slider.js":45,"css-keyframer":2,"inline-style-prefixer":4,"jquery":36,"sat":41,"velocity-animate":42}],45:[function(require,module,exports){
+'use strict';
+
 var SAT = require('sat');
 var CSSKeyframer = require('css-keyframer');
 var Prefixer = require('inline-style-prefixer');
 
 var $event = $.event,
-$special,
-resizeTimeout;
+    $special,
+    resizeTimeout;
 
 $special = $event.special.debouncedresize = {
-	setup: function() {
-		$( this ).on( "resize", $special.handler );
+	setup: function setup() {
+		$(this).on("resize", $special.handler);
 	},
-	teardown: function() {
-		$( this ).off( "resize", $special.handler );
+	teardown: function teardown() {
+		$(this).off("resize", $special.handler);
 	},
-	handler: function( event, execAsap ) {
+	handler: function handler(event, execAsap) {
 		// Save the context
 		var context = this,
-			args = arguments,
-			dispatch = function() {
-				// set correct event type
-				event.type = "debouncedresize";
-				$event.dispatch.apply( context, args );
-			};
+		    args = arguments,
+		    dispatch = function dispatch() {
+			// set correct event type
+			event.type = "debouncedresize";
+			$event.dispatch.apply(context, args);
+		};
 
-		if ( resizeTimeout ) {
-			clearTimeout( resizeTimeout );
+		if (resizeTimeout) {
+			clearTimeout(resizeTimeout);
 		}
 
-		execAsap ?
-			dispatch() :
-			resizeTimeout = setTimeout( dispatch, $special.threshold );
+		execAsap ? dispatch() : resizeTimeout = setTimeout(dispatch, $special.threshold);
 	},
 	threshold: 50
 };
@@ -26364,7 +26383,7 @@ function createDiamondClipPath(diamond) {
 	var bottom = vectorAdd(diamond.pos, diamond.points[2]);
 	var left = vectorAdd(diamond.pos, diamond.points[3]);
 
-	return `polygon(${top.x}px ${top.y}px, ${right.x}px ${right.y}px, ${bottom.x}px ${bottom.y}px, ${left.x}px ${left.y}px)`
+	return 'polygon(' + top.x + 'px ' + top.y + 'px, ' + right.x + 'px ' + right.y + 'px, ' + bottom.x + 'px ' + bottom.y + 'px, ' + left.x + 'px ' + left.y + 'px)';
 }
 
 function getCenterScreenDiamonds() {
@@ -26372,23 +26391,18 @@ function getCenterScreenDiamonds() {
 	var increment = 20;
 	var windowPoly = new SAT.Box(new SAT.Vector(0, 0), winsize.width, winsize.height).toPolygon();
 
-	var top = new SAT.Vector(winsize.width/2, winsize.height/2+1),
-	right = new SAT.Vector(1, 1),
-	bottom = new SAT.Vector(0, 2),
-	left = new SAT.Vector(-1, 1);
+	var top = new SAT.Vector(winsize.width / 2, winsize.height / 2 + 1),
+	    right = new SAT.Vector(1, 1),
+	    bottom = new SAT.Vector(0, 2),
+	    left = new SAT.Vector(-1, 1);
 
 	var start = new SAT.Polygon(top, [new SAT.Vector(), right, bottom, left]);
 	var contain = copyPolygon(start);
 	var fill;
 
 	// [(0, 0), (1, 1), (0, 2), (-1, 1)]
-	while(true) {
-		contain = new SAT.Polygon(contain.pos.add(new SAT.Vector(0, -increment)), [
-			new SAT.Vector(),
-			contain.points[1].add(new SAT.Vector(increment, increment)),
-			contain.points[2].add(new SAT.Vector(0, increment*2)),
-			contain.points[3].add(new SAT.Vector(-increment, increment))
-		]);
+	while (true) {
+		contain = new SAT.Polygon(contain.pos.add(new SAT.Vector(0, -increment)), [new SAT.Vector(), contain.points[1].add(new SAT.Vector(increment, increment)), contain.points[2].add(new SAT.Vector(0, increment * 2)), contain.points[3].add(new SAT.Vector(-increment, increment))]);
 
 		if (!fill && Math.floor(contain.pos.y <= 0)) {
 			fill = copyPolygon(contain);
@@ -26397,7 +26411,7 @@ function getCenterScreenDiamonds() {
 		var response = new SAT.Response();
 		SAT.testPolygonPolygon(contain, windowPoly, response);
 		if (response.bInA) {
-			return { start: start, fill: fill, contain: contain }
+			return { start: start, fill: fill, contain: contain };
 		}
 	}
 }
@@ -26410,26 +26424,50 @@ function vectorAdd(v1, v2) {
 function copyPolygon(polygon) {
 	var pos = new SAT.Vector().copy(polygon.pos);
 	var points = [];
-	for (var point of polygon.points) {
-		var copy = new SAT.Vector().copy(point);
-		points.push(copy);
+	var _iteratorNormalCompletion = true;
+	var _didIteratorError = false;
+	var _iteratorError = undefined;
+
+	try {
+		for (var _iterator = polygon.points[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+			var point = _step.value;
+
+			var copy = new SAT.Vector().copy(point);
+			points.push(copy);
+		}
+	} catch (err) {
+		_didIteratorError = true;
+		_iteratorError = err;
+	} finally {
+		try {
+			if (!_iteratorNormalCompletion && _iterator.return) {
+				_iterator.return();
+			}
+		} finally {
+			if (_didIteratorError) {
+				throw _iteratorError;
+			}
+		}
 	}
+
 	return new SAT.Polygon(pos, points);
 }
 
 function getWindowSize() {
 	var $body = $('body');
 	var $window = $(window);
-	$body.css( 'overflow-y', 'hidden' );
-	var w = $window.width(), h =  $window.height();
-	return { width : w, height : h };
+	$body.css('overflow-y', 'hidden');
+	var w = $window.width(),
+	    h = $window.height();
+	return { width: w, height: h };
 }
 
 function debounce(func, wait, immediate) {
 	var timeout;
-	return function() {
-		var context = this, args = arguments;
-		var later = function() {
+	return function () {
+		var context = this,
+		    args = arguments;
+		var later = function later() {
 			timeout = null;
 			if (!immediate) func.apply(context, args);
 		};
@@ -26440,7 +26478,7 @@ function debounce(func, wait, immediate) {
 	};
 };
 
-module.exports = (function () {
+module.exports = function () {
 	function Slider(wrapper) {
 		// Durations
 		this.durations = {
@@ -26466,16 +26504,14 @@ module.exports = (function () {
 		this.dom.slide = this.dom.wrapper.find('.slide');
 		this.dom.arrow = this.dom.wrapper.find('.arrow');
 		this.length = this.dom.slide.length;
-		this.keyframer = new CSSKeyframer({ /* options */ }),
-
-		this.init();
+		this.keyframer = new CSSKeyframer({/* options */}), this.init();
 		this.events();
 		this.createAnimation();
 		// this.auto = setInterval(this.updateNext.bind(this), this.durations.auto);
 	}
 	/**
-	* Set initial z-indexes & get current project
-	*/
+ * Set initial z-indexes & get current project
+ */
 	Slider.prototype.init = function () {
 		// this.dom.slide.css('z-index', 10);
 		this.dom.current = $(this.dom.slide[this.current]);
@@ -26486,26 +26522,24 @@ module.exports = (function () {
 
 	Slider.prototype.destroy = function () {
 		this.dom.wrapper.off('DOMMouseScroll mousewheel');
-	}
+	};
 
 	/**
-	* Initialize events
-	*/
+ * Initialize events
+ */
 	Slider.prototype.events = function () {
 		var self = this;
-		this.dom.wrapper.on('DOMMouseScroll mousewheel', function(e) {
+		this.dom.wrapper.on('DOMMouseScroll mousewheel', function (e) {
 			e.preventDefault();
-			if (self.working)
-				return;
+			if (self.working) return;
 			self.processScroll(e.originalEvent);
 		});
 		this.dom.arrow.on('click', function () {
 			console.log("HELLO");
-			if (self.working)
-				return;
+			if (self.working) return;
 			self.processBtn($(this));
 		});
-		$(window).on( 'debouncedresize', function() {
+		$(window).on('debouncedresize', function () {
 			self.createAnimation();
 		});
 	};
@@ -26517,44 +26551,39 @@ module.exports = (function () {
 		var prefixer = new Prefixer();
 
 		var expandDiamondFromCenter = {
-				'0%' : prefixer.prefix({
-					clipPath: start
-				}),
-				'99%': prefixer.prefix({
-					clipPath: end
-				}),
-				'100%': prefixer.prefix({
-					width: '100%',
-					height: '100%'
-				})
-		}
+			'0%': prefixer.prefix({
+				clipPath: start
+			}),
+			'99%': prefixer.prefix({
+				clipPath: end
+			}),
+			'100%': prefixer.prefix({
+				width: '100%',
+				height: '100%'
+			})
+		};
 
 		this.keyframer.register("expandDiamondFromCenter", expandDiamondFromCenter);
-	}
+	};
 
 	Slider.prototype.processScroll = function (scrollEvent) {
 		this.working = true;
-		if (scrollEvent.deltaY < 0)
-			this.updatePrevious();
-		if (scrollEvent.deltaY > 0)
-			this.updateNext();
-
-	}
+		if (scrollEvent.deltaY < 0) this.updatePrevious();
+		if (scrollEvent.deltaY > 0) this.updateNext();
+	};
 
 	Slider.prototype.processBtn = function (btn) {
 		if (this.isAuto) {
 			this.isAuto = false;
 			clearInterval(this.auto);
 		}
-		if (btn.hasClass('next'))
-			this.updateNext();
-		if (btn.hasClass('previous'))
-			this.updatePrevious();
+		if (btn.hasClass('next')) this.updateNext();
+		if (btn.hasClass('previous')) this.updatePrevious();
 	};
 
 	/**
-	* Update next global index
-	*/
+ * Update next global index
+ */
 	Slider.prototype.updateNext = function () {
 		console.log('UPDATE NEXT');
 		this.next = (this.current + 1) % this.length;
@@ -26562,27 +26591,26 @@ module.exports = (function () {
 	};
 
 	/**
-	* Update next global index
-	*/
+ * Update next global index
+ */
 	Slider.prototype.updatePrevious = function () {
 		console.log('UPDATE PREVIOUS');
 		this.next--;
-		if (this.next < 0)
-			this.next = this.length - 1;
+		if (this.next < 0) this.next = this.length - 1;
 		this.process();
 	};
 
 	/**
-	* Process, calculate and switch between slides
-	*/
+ * Process, calculate and switch between slides
+ */
 	Slider.prototype.process = function () {
 		var self = this;
 		this.dom.next = $(this.dom.slide[this.next]);
 		this.dom.current.css('z-index', 20);
 		this.dom.next.css('z-index', 30);
 
-		self.dom.next.css(this.keyframer.animationProp.js, "expandDiamondFromCenter "+ this.durations.slide + "ms" + " forwards ease");
-		self.dom.next.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {
+		self.dom.next.css(this.keyframer.animationProp.js, "expandDiamondFromCenter " + this.durations.slide + "ms" + " forwards ease");
+		self.dom.next.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function () {
 			self.dom.current.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
 			self.dom.current.css('z-index', 10);
 			self.dom.current.removeClass('showing');
@@ -26591,10 +26619,10 @@ module.exports = (function () {
 			self.dom.current = self.dom.next;
 			self.current = self.next;
 			self.working = false;
-		})
+		});
 	};
 
-	return Slider
-})();
+	return Slider;
+}();
 
 },{"css-keyframer":2,"inline-style-prefixer":4,"sat":41}]},{},[43]);
