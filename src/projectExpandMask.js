@@ -24,8 +24,6 @@ module.exports = (function() {
 
 	prefixer = new Prefixer();
 
-	var slider;
-
 	function init( options ) {
 		initEvents();
 	}
@@ -41,15 +39,14 @@ module.exports = (function() {
 			$visible = $item.find('.visible-item'),
 			$slides = $item.find('.slides');
 
+			var slider;
+
 			$item.on( 'click', function() {
 				if( $item.data( 'isExpanded' ) ) {
 					return false;
 				}
 				$item.data( 'isExpanded', true );
 
-				$body.on('DOMMouseScroll mousewheel', function(e) {
-					e.preventDefault();
-				})
 				// save current item's index
 				current = $item.index();
 
@@ -216,17 +213,12 @@ module.exports = (function() {
 
 				$overlay.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {
 					$overlay.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
-					$body.off('DOMMouseScroll mousewheel');
 					slider = new Slider($slides);
 				});
 
 			});
 
 			$close.on( 'click', function(event) {
-				$body.on('DOMMouseScroll mousewheel', function(e) {
-					e.preventDefault();
-				})
-
 				var diamonds = getCenterScreenDiamonds();
 				// Diamond when the top point hits the top of the screen
 				var topDiamond = diamonds.fill;
@@ -301,14 +293,16 @@ module.exports = (function() {
 				keyframer.register("moveDown", moveDown);
 
 				$title.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {
+					$title.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
 					$body.css('overflow-y', 'hidden');
 					$title[0].style['position'] = 'static';
-					$title.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
+					console.log(slider);
 				})
 
 				$title[0].style[keyframer.animationProp.js] = "moveDown " + animationTime + " " + timingFunction + " forwards";
 
 				/*******************************************************/
+				console.log(startDiamond.pos.y);
 
 				var enterFromAbove = {
 					'0%': {
@@ -348,14 +342,16 @@ module.exports = (function() {
 				}
 
 				$overlay.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function(e) {
-					$item.data('isExpanded', false);
-					$items.each(function() {
-						this.style[keyframer.animationProp.js] = "";
-					})
-					$overlay[0].style[keyframer.animationProp.js] = "";
-					$body.off('DOMMouseScroll mousewheel');
-
-					$overlay.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
+					if (e.target === this) {
+						$item.data('isExpanded', false);
+						$items.each(function() {
+							this.style[keyframer.animationProp.js] = "";
+						})
+						$overlay[0].style[keyframer.animationProp.js] = "";
+						console.log(slider);
+						slider.destroy();
+						$overlay.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
+					}
 				});
 
 
@@ -377,13 +373,6 @@ module.exports = (function() {
 		var scrollT = $window.scrollTop(),
 		scrollL = $window.scrollLeft(),
 		itemOffset = $item.offset();
-
-		console.log({
-			left : itemOffset.left - scrollL,
-			top : itemOffset.top - scrollT,
-			width : $item.outerWidth(),
-			height : $item.outerHeight()
-		})
 
 		return {
 			left : itemOffset.left - scrollL,
@@ -425,7 +414,7 @@ module.exports = (function() {
 				contain.points[3].add(new SAT.Vector(-increment, increment))
 			]);
 
-			if (!fill && Math.floor(contain.pos.y <= 0)) {
+			if (!fill && (contain.pos.y <= 0)) {
 				fill = copyPolygon(contain);
 			}
 

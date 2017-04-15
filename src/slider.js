@@ -161,7 +161,14 @@ module.exports = (function () {
 	};
 
 	Slider.prototype.destroy = function () {
+		console.log(this.dom.wrapper);
+		var self = this;
+		this.dom.slide.each(function(idx, slide) {
+			console.log(slide);
+			slide.style[self.keyframer.animationProp.js] = '';
+		})
 		this.dom.wrapper.off('DOMMouseScroll mousewheel');
+		this.dom.arrow.off('click');
 	}
 
 	/**
@@ -169,14 +176,16 @@ module.exports = (function () {
 	*/
 	Slider.prototype.events = function () {
 		var self = this;
+		console.log("INITIALIZING LISTENERS");
 		this.dom.wrapper.on('DOMMouseScroll mousewheel', function(e) {
 			e.preventDefault();
-			if (self.working)
+			if (self.working) {
+				console.log("WORKING CAN't KEEP GOING");
 				return;
+			}
 			self.processScroll(e.originalEvent);
 		});
 		this.dom.arrow.on('click', function () {
-			console.log("HELLO");
 			if (self.working)
 				return;
 			self.processBtn($(this));
@@ -209,7 +218,6 @@ module.exports = (function () {
 	}
 
 	Slider.prototype.processScroll = function (scrollEvent) {
-		this.working = true;
 		if (scrollEvent.deltaY < 0)
 			this.updatePrevious();
 		if (scrollEvent.deltaY > 0)
@@ -233,6 +241,7 @@ module.exports = (function () {
 	*/
 	Slider.prototype.updateNext = function () {
 		console.log('UPDATE NEXT');
+		this.working = true;
 		this.next = (this.current + 1) % this.length;
 		this.process();
 	};
@@ -242,6 +251,7 @@ module.exports = (function () {
 	*/
 	Slider.prototype.updatePrevious = function () {
 		console.log('UPDATE PREVIOUS');
+		this.working = true;
 		this.next--;
 		if (this.next < 0)
 			this.next = this.length - 1;
@@ -252,14 +262,15 @@ module.exports = (function () {
 	* Process, calculate and switch between slides
 	*/
 	Slider.prototype.process = function () {
+		console.log("PROCESSING");
 		var self = this;
 		this.dom.next = $(this.dom.slide[this.next]);
 		this.dom.current.css('z-index', 20);
 		this.dom.next.css('z-index', 30);
 
 		self.dom.next.css(this.keyframer.animationProp.js, "expandDiamondFromCenter "+ this.durations.slide + "ms" + " forwards ease");
-		self.dom.next.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {
-			self.dom.current.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
+		self.dom.next.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function(e) {
+			self.dom.next.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
 			self.dom.current.css('z-index', 10);
 			self.dom.current.removeClass('showing');
 			self.dom.next.addClass('showing');
