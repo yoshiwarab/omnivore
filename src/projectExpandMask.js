@@ -6,8 +6,6 @@ var CSSKeyframer = require('css-keyframer');
 var Prefixer = require('inline-style-prefixer');
 var Slider = require('./slider.js');
 
-console.log(Slider);
-
 module.exports = (function() {
 
 	var $items = $( '.projects > .project' ),
@@ -75,8 +73,6 @@ module.exports = (function() {
 
 				// The relative size of the diamond where the top hits the top of the window to the final diamond
 				var topPercent = '' + (((topDiamond.pos.y + topDiamond.points[2].y) / (endDiamond.pos.y + endDiamond.points[2].y)).toFixed(2) * 100) + '%';
-								// var topPercent = ((topDiamond.pos.y + topDiamond.points[2].y) / (endDiamond.pos.y + endDiamond.points[2].y)).toFixed(2);
-
 
 				var thisIdx = $items.index($item);
 				var prevLp = getItemLayoutProp($($items[thisIdx-1] || $item));
@@ -155,9 +151,9 @@ module.exports = (function() {
 
 				$title[0].style[keyframer.animationProp.js] = "moveUp " + animationTime + " forwards " + timingFunction;
 
-				moveUp[topPercent] = {
-					transform: `translateY(${layoutProp.top}px)`
-				}
+				// moveUp[topPercent] = {
+				// 	transform: `translateY(${layoutProp.top}px)`
+				// }
 
 				/*******************************************************/
 
