@@ -1,5 +1,6 @@
 var moment = require('moment-timezone');
-var expand = require('./projectExpandMask.js');
+import ProjectViewer from './ProjectViewer';
+// var expand = require('./projectExpandMask.js');
 
 var theDate;
 var colorNYC = {r:154, g:184, b:206};
@@ -76,6 +77,7 @@ ready(function () {
 		return x;
 	}
 
-	expand.init();
+	// expand.init();
+	new ProjectViewer();
 
 });
