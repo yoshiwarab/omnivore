@@ -11457,8 +11457,6 @@ var ProjectViewer = function () {
 				this.closeAnimationTime = '2000ms';
 				this.timingFunction = 'ease';
 
-				this.isShowing = false;
-
 				this.initEvents();
 		}
 
@@ -11485,7 +11483,9 @@ var ProjectViewer = function () {
 
 										$project.data('isExpanded', true);
 
-										_this.isShowing = true;
+										_this.$overlay.on('mousemove', function (e) {
+												e.stopImmediatePropagation();
+										});
 
 										// Don't show scrollbar on expansion
 										_this.$body.css('overflow-y', 'hidden');
@@ -11682,7 +11682,7 @@ var ProjectViewer = function () {
 												} else {
 														(0, _CSSAnimationChainer.applyCSSAnimation)(project, 'enterFromBelow', _this.closeAnimationTime, { fillMode: 'forwards' }).then(function () {
 																project.style[_this.keyframer.animationProp.js] = '';
-																_this.isShowing = false;
+																$overlay.off('mousemove');
 														});
 												}
 										});
@@ -11815,14 +11815,12 @@ ready(function () {
 	}
 
 	function followCursor() {
-		if (!projectViewer.isShowing) {
-			var body = document.querySelector('body');
-			var percentX = mouseX / outerWidth(body);
-			var cursorR = interpolate(colorLA.r, colorNYC.r, percentX);
-			var cursorG = interpolate(colorLA.g, colorNYC.g, percentX);
-			var cursorB = interpolate(colorLA.b, colorNYC.b, percentX);
-			body.style.background = '-webkit-radial-gradient(' + mouseX + 'px ' + mouseY + 'px, 1000px 1000px, rgb(' + cursorR + ',' + cursorG + ',' + cursorB + ') 0%,rgb(237,243,216) 100%)';
-		}
+		var body = document.querySelector('body');
+		var percentX = mouseX / outerWidth(body);
+		var cursorR = interpolate(colorLA.r, colorNYC.r, percentX);
+		var cursorG = interpolate(colorLA.g, colorNYC.g, percentX);
+		var cursorB = interpolate(colorLA.b, colorNYC.b, percentX);
+		body.style.background = '-webkit-radial-gradient(' + mouseX + 'px ' + mouseY + 'px, 1000px 1000px, rgb(' + cursorR + ',' + cursorG + ',' + cursorB + ') 0%,rgb(237,243,216) 100%)';
 	}
 
 	setInterval(updateGradient, speedTime);
