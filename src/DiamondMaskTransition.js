@@ -23,10 +23,11 @@ export default class DiamondMaskTransition {
     };
     this.generateDiamonds();
     this.createAndRegisterDefaultAnimations();
+    this.addListeners();
   }
 
   addListeners() {
-    document.onresize = (event) => {
+    window.onresize = (event) => {
       this.generateDiamonds();
       this.createAndRegisterDefaultAnimations();
     }
@@ -54,7 +55,7 @@ export default class DiamondMaskTransition {
 				end.points[3].add(new SAT.Vector(-this.increment, this.increment))
 			]);
 
-			if (!verticalFill && (end.pos.y <= 0))
+			if (!verticalFill && (end.pos.y <= 0) && ((end.pos.y + end.points[2].y) >= window.innerHeight))
 				verticalFill = SATUtils.copyPolygon(end);
 
       if (!horizontalFill && ((end.pos.x + end.points[1].x) > window.innerWidth))
@@ -140,7 +141,7 @@ export default class DiamondMaskTransition {
 
   createAndRegisterCollapseToPointAnimation(x, y, centerFirst) {
     let verticalFillPercent = '' + ((1 - (((this.verticalFill.pos.y + this.verticalFill.points[2].y) / (this.end.pos.y + this.end.points[2].y)).toFixed(2))) * 100) + '%';
-    let collapsed = createDiamondAtPoint(x, y);
+    let collapsed = this.createDiamondAtPoint(x, y);
 
     let collapseDiamondToPoint = {
       '0%' : prefixAll({
@@ -186,7 +187,7 @@ export default class DiamondMaskTransition {
   }
 
   getCollapseVerticalFillPercent() {
-    return verticalFillPercent = '' + ((1 - (((this.verticalFill.pos.y + this.verticalFill.points[2].y) / (this.end.pos.y + this.end.points[2].y)).toFixed(2))) * 100) + '%';
+    return '' + ((1 - (((this.verticalFill.pos.y + this.verticalFill.points[2].y) / (this.end.pos.y + this.end.points[2].y)).toFixed(2))) * 100) + '%';
   }
 
   static generateClipPathString(diamond) {

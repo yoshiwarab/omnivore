@@ -1,92 +1,10 @@
-var SAT = require('sat');
-var CSSKeyframer = require('css-keyframer');
-var Prefixer = require('inline-style-prefixer');
+import SAT from 'sat';
+import prefixAll from 'inline-style-prefixer/static';
+import DOMUtils from './DOMUtils';
+import { applyCSSAnimation } from './CSSAnimationChainer.js';
 
-function createDiamondClipPath(diamond) {
-	var top = diamond.pos;
-	var right = vectorAdd(diamond.pos, diamond.points[1]);
-	var bottom = vectorAdd(diamond.pos, diamond.points[2]);
-	var left = vectorAdd(diamond.pos, diamond.points[3]);
-
-	return `polygon(${top.x}px ${top.y}px, ${right.x}px ${right.y}px, ${bottom.x}px ${bottom.y}px, ${left.x}px ${left.y}px)`
-}
-
-function getCenterScreenDiamonds() {
-	var winsize = getWindowSize();
-	var increment = 20;
-	var windowPoly = new SAT.Box(new SAT.Vector(0, 0), winsize.width, winsize.height).toPolygon();
-
-	var top = new SAT.Vector(winsize.width/2, winsize.height/2+1),
-	right = new SAT.Vector(1, 1),
-	bottom = new SAT.Vector(0, 2),
-	left = new SAT.Vector(-1, 1);
-
-	var start = new SAT.Polygon(top, [new SAT.Vector(), right, bottom, left]);
-	var contain = copyPolygon(start);
-	var fill;
-
-	// [(0, 0), (1, 1), (0, 2), (-1, 1)]
-	while(true) {
-		contain = new SAT.Polygon(contain.pos.add(new SAT.Vector(0, -increment)), [
-			new SAT.Vector(),
-			contain.points[1].add(new SAT.Vector(increment, increment)),
-			contain.points[2].add(new SAT.Vector(0, increment*2)),
-			contain.points[3].add(new SAT.Vector(-increment, increment))
-		]);
-
-		if (!fill && Math.floor(contain.pos.y <= 0)) {
-			fill = copyPolygon(contain);
-		}
-
-		var response = new SAT.Response();
-		SAT.testPolygonPolygon(contain, windowPoly, response);
-		if (response.bInA) {
-			return { start: start, fill: fill, contain: contain }
-		}
-	}
-}
-
-function vectorAdd(v1, v2) {
-	var v1 = new SAT.Vector().copy(v1);
-	return v1.add(v2);
-}
-
-function copyPolygon(polygon) {
-	var pos = new SAT.Vector().copy(polygon.pos);
-	var points = [];
-	for (var point of polygon.points) {
-		var copy = new SAT.Vector().copy(point);
-		points.push(copy);
-	}
-	return new SAT.Polygon(pos, points);
-}
-
-function getWindowSize() {
-	var $body = $('body');
-	var $window = $(window);
-	$body.css( 'overflow-y', 'hidden' );
-	var w = $window.width(), h =  $window.height();
-	return { width : w, height : h };
-}
-
-function debounce(func, wait, immediate) {
-	var timeout;
-	return function() {
-		var context = this, args = arguments;
-		var later = function() {
-			timeout = null;
-			if (!immediate) func.apply(context, args);
-		};
-		var callNow = immediate && !timeout;
-		clearTimeout(timeout);
-		timeout = setTimeout(later, wait);
-		if (callNow) func.apply(context, args);
-	};
-};
-
-module.exports = (function () {
-	function Slider(wrapper) {
-		// Durations
+export default class Slider {
+	constructor(wrapper, dmt, opts) {
 		this.durations = {
 			auto: 5000,
 			slide: 1400
@@ -94,8 +12,6 @@ module.exports = (function () {
 		// DOM
 		this.dom = {
 			wrapper: null,
-			container: null,
-			project: null,
 			current: null,
 			next: null,
 			arrow: null
@@ -107,136 +23,128 @@ module.exports = (function () {
 		this.isAuto = false;
 		this.working = false;
 		this.dom.wrapper = wrapper;
-		this.dom.slide = this.dom.wrapper.find('.slide');
-		this.dom.arrow = this.dom.wrapper.find('.arrow');
-		this.length = this.dom.slide.length;
-		this.keyframer = new CSSKeyframer({ /* options */ }),
-
+		this.dom.slides = this.dom.wrapper.querySelectorAll('.slide');
+		this.dom.arrow = this.dom.wrapper.querySelectorAll('.arrow');
+		this.length = this.dom.slides.length;
+		this.mustDestroy = false;
+		this.dmt = dmt;
 		this.init();
-		this.events();
-		this.createAnimation();
-		// this.auto = setInterval(this.updateNext.bind(this), this.durations.auto);
-	}
-	/**
-	* Set initial z-indexes & get current project
-	*/
-	Slider.prototype.init = function () {
-		// this.dom.slide.css('z-index', 10);
-		this.dom.current = $(this.dom.slide[this.current]);
-		this.dom.next = $(this.dom.slide[this.current + 1]);
-		// this.dom.current.css('z-index', 30);
-		// this.dom.next.css('z-index', 20);
-	};
-
-	Slider.prototype.destroy = function () {
-		this.dom.wrapper.off('DOMMouseScroll mousewheel');
 	}
 
-	/**
-	* Initialize events
-	*/
-	Slider.prototype.events = function () {
-		var self = this;
-		this.dom.wrapper.on('DOMMouseScroll mousewheel', function(e) {
-			e.preventDefault();
-			if (self.working)
-				return;
-			self.processScroll(e.originalEvent);
-		});
-		this.dom.arrow.on('click', function () {
-			console.log("HELLO");
-			if (self.working)
-				return;
-			self.processBtn($(this));
-		});
-		$(window).on( 'debouncedresize', function() {
-			self.createAnimation();
-		});
-	};
-
-	Slider.prototype.createAnimation = function () {
-		var diamonds = getCenterScreenDiamonds();
-		var start = createDiamondClipPath(diamonds.start);
-		var end = createDiamondClipPath(diamonds.contain);
-		var prefixer = new Prefixer();
-
-		var expandDiamondFromCenter = {
-				'0%' : prefixer.prefix({
-					clipPath: start
-				}),
-				'99%': prefixer.prefix({
-					clipPath: end
-				}),
-				'100%': prefixer.prefix({
-					width: '100%',
-					height: '100%'
-				})
+	init() {
+		console.log('HELLO');
+		for (let slide of this.dom.slides) {
+			slide.style.zIndex = 10;
 		}
 
-		this.keyframer.register("expandDiamondFromCenter", expandDiamondFromCenter);
+		this.dom.current = this.dom.slides[this.current];
+		this.dom.current = this.dom.slides[this.current];
+		this.dom.next = this.dom.slides[this.current + 1];
+		this.dom.current.style.zIndex = 30;
+		this.dom.next.style.zIndex = 20;
+		this.events();
 	}
 
-	Slider.prototype.processScroll = function (scrollEvent) {
-		this.working = true;
-		if (scrollEvent.deltaY < 0)
-			this.updatePrevious();
-		if (scrollEvent.deltaY > 0)
-			this.updateNext();
+	events() {
 
+		this.processScrollEvent = (e) => {
+			e.preventDefault();
+			console.log("PROCESSING SCROLL");
+			if (this.working) return;
+
+			this.working = true;
+			if (e.deltaY < 0)
+				this.updatePrevious();
+			if (e.deltaY > 0)
+				this.updateNext();
+		}
+
+		this.processClickEvent = (e) => {
+			if (this.working)
+				return;
+			if (DOMUtils.hasClass(e.target, 'arrow'))
+				this.processBtn(e.target);
+		}
+
+		DOMUtils.addMultiEventListener(this.dom.wrapper, 'DOMMouseScroll mousewheel', this.processScrollEvent);
+		this.dom.wrapper.addEventListener('click', this.processClickEvent);
 	}
 
-	Slider.prototype.processBtn = function (btn) {
+	destroy() {
+		if (this.working) {
+			console.log("TRYING TO DESTROY BUT STILL WORKING");
+			this.mustDestroy = true;
+			return;
+		}
+
+		DOMUtils.removeMultiEventListener(this.dom.wrapper, 'DOMMouseScroll mousewheel', this.processScrollEvent);
+		this.dom.wrapper.removeEventListener('click', this.processClickEvent);
+		this.dom.slides.forEach((slide) => {
+			DOMUtils.removeClass(slide, 'showing');
+			Object.assign(slide.style, prefixAll({animation: '', zIndex: ''}));
+		});
+		DOMUtils.addClass(this.dom.slides[0], 'showing');
+	}
+
+	processBtn(btn) {
 		if (this.isAuto) {
 			this.isAuto = false;
 			clearInterval(this.auto);
 		}
-		if (btn.hasClass('next'))
+		if (DOMUtils.hasClass(btn, 'next'))
 			this.updateNext();
-		if (btn.hasClass('previous'))
+		if (DOMUtils.hasClass(btn, 'previous'))
 			this.updatePrevious();
-	};
+	}
 
 	/**
 	* Update next global index
 	*/
-	Slider.prototype.updateNext = function () {
-		console.log('UPDATE NEXT');
+	updateNext() {
+		console.log("UPDATING NEXT");
 		this.next = (this.current + 1) % this.length;
 		this.process();
-	};
+	}
 
 	/**
 	* Update next global index
 	*/
-	Slider.prototype.updatePrevious = function () {
-		console.log('UPDATE PREVIOUS');
+	updatePrevious() {
+		console.log("UPDATING PREVIOUS");
 		this.next--;
 		if (this.next < 0)
 			this.next = this.length - 1;
 		this.process();
-	};
+	}
 
 	/**
 	* Process, calculate and switch between slides
 	*/
-	Slider.prototype.process = function () {
-		var self = this;
-		this.dom.next = $(this.dom.slide[this.next]);
-		this.dom.current.css('z-index', 20);
-		this.dom.next.css('z-index', 30);
+	process() {
+		this.dom.next = this.dom.slides[this.next];
+		this.dom.current.style.zIndex = 20;
+		this.dom.next.style.zIndex = 30;
 
-		self.dom.next.css(this.keyframer.animationProp.js, "expandDiamondFromCenter "+ this.durations.slide + "ms" + " forwards ease");
-		self.dom.next.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {
-			self.dom.current.off('webkitAnimationEnd oanimationend msAnimationEnd animationend');
-			self.dom.current.css('z-index', 10);
-			self.dom.current.removeClass('showing');
-			self.dom.next.addClass('showing');
-			self.dom.current.css(self.keyframer.animationProp.js, '');
-			self.dom.current = self.dom.next;
-			self.current = self.next;
-			self.working = false;
-		})
-	};
+		Object.assign(this.dom.current.style, prefixAll({animation: ''}));
 
-	return Slider
-})();
+		applyCSSAnimation(this.dom.next,
+			this.dmt.animations.expandFromCenter,
+			'2000ms',
+			{fillMode: 'forwards'})
+		.then(() => {
+			console.log(this);
+			this.dom.current.style.zIndex = 10;
+			DOMUtils.removeClass(this.dom.current, 'showing');
+			DOMUtils.addClass(this.dom.next, 'showing');
+			this.dom.current = this.dom.next;
+			this.current = this.next;
+			this.working = false;
+			console.log(this.mustDestroy);
+			if (this.mustDestroy) {
+				console.log("HELLOO");
+				console.log(this.mustDestroy);
+				this.destroy();
+			}
+		});
+	}
+}

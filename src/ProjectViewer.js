@@ -26,6 +26,10 @@ export default class ProjectViewer {
     // Create the DiamondExpansionAnimation
     this.dmt = new DiamondMaskTransition(this.keyframer);
 
+    this.openAnimationTime = '2000ms';
+    this.closeAnimationTime = '2000ms';
+    this.timingFunction = 'ease';
+
     this.initEvents();
   }
 
@@ -49,6 +53,9 @@ export default class ProjectViewer {
 
 				$project.data('isExpanded', true);
 
+        // Don't show scrollbar on expansion
+        this.$body.css('overflow-y', 'hidden');
+
 				// save current item's index
 				this.current = idx;
 
@@ -58,15 +65,12 @@ export default class ProjectViewer {
         $overlay[0].style['pointer-events'] = 'auto';
         this.dmt.createAndRegisterExpandFromPointAnimation(window.innerWidth/2, layoutProp.bottom, true, {fillMode: 'forwards'});
 
-        let animationTime = '2000ms';
-        let timingFunction = 'ease';
-
         applyCSSAnimation($overlay[0],
           this.dmt.animations.expandFromPoint,
           '2000ms',
           {fillMode: 'forwards'})
         .then(() => {
-          slider = new Slider($slides);
+          slider = new Slider($slides[0], this.dmt);
         });
 
 				let titleLayoutProp = $title[0].getBoundingClientRect();
@@ -81,33 +85,30 @@ export default class ProjectViewer {
 						top: titleLayoutProp.top + 'px',
 						left: 0,
 						right: 0,
+            trasform: 'translateY(0)',
 						margin: '0 auto',
 						zIndex: 1000
 					}),
-					'99%': prefixAll({
-						position: 'fixed',
-						left: 0,
-						right: 0,
-						margin: '0 auto',
-					}),
 					'100%': prefixAll({
 						position: 'fixed',
-						top: '1em',
+						transform: `translateY(${-titleLayoutProp.top + 16}px)`,
 						left: 0,
 						right: 0,
-						margin: '0 auto',
 						zIndex: 10000
 					})
 				}
+
+        console.log(-titleLayoutProp.top + 16);
+
 				moveUp[this.dmt.getExpandVerticalFillPercent()] = prefixAll({
 					left: 0,
 					right: 0,
 					margin: '0 auto',
-					top: '1em'
+          transform: `translateY(${-titleLayoutProp.top + 16}px)`
 				});
 				this.keyframer.register("moveUp", moveUp);
 
-				$title[0].style[this.keyframer.animationProp.js] = "moveUp " + animationTime + " forwards " + timingFunction;
+				$title[0].style[this.keyframer.animationProp.js] = "moveUp " + this.openAnimationTime + " forwards " + this.timingFunction;
 
 				/*******************************************************/
         let prevLp = (this.$projects[idx-1] || $project[0]).getBoundingClientRect();
@@ -152,18 +153,127 @@ export default class ProjectViewer {
 
 				/*******************************************************/
 
-				for (var i = 0; i < this.$projects.length; i++) {
-					var item = this.$projects[i]
-					if (i == idx) {
-						continue;
-					} else if (i < idx) {
-						item.style[this.keyframer.animationProp.js] = "exitUp " + animationTime + " forwards " + timingFunction;
-					} else {
-						item.style[this.keyframer.animationProp.js] = "exitDown " + animationTime + " forwards " + timingFunction;
-					}
-				}
-
+        this.$projects.each((projectIdx, project) => {
+          if (projectIdx == idx) {
+            return true;
+          } else if (projectIdx < idx) {
+            project.style[this.keyframer.animationProp.js] = "exitUp " + this.openAnimationTime + " forwards " + this.timingFunction;
+          } else {
+            project.style[this.keyframer.animationProp.js] = "exitDown " + this.openAnimationTime + " forwards " + this.timingFunction;
+          }
+        });
 			});
-    })
-  }
+
+      $close.on('click', () => {
+
+        let layoutProp = $project[0].getBoundingClientRect();
+
+        this.dmt.createAndRegisterCollapseToPointAnimation(window.innerWidth/2, layoutProp.bottom);
+
+        applyCSSAnimation($overlay[0],
+          this.dmt.animations.collapseToPoint,
+          '2000ms',
+          {fillMode: 'forwards'})
+        .then(() => {
+          slider.destroy()
+          slider = null;
+
+          $project.data('isExpanded', false);
+
+          $overlay[0].style[this.keyframer.animationProp.js] = '';
+        });
+
+				/*******************************************************/
+
+				let visibleLayoutProp = $visible[0].getBoundingClientRect();
+
+				let moveDown = prefixAll({
+					'0%': {
+						left: 0,
+						right: 0,
+            transform: `translateY(${-visibleLayoutProp.top + 11}px)`,
+						margin: '0 auto',
+						zIndex: 1000
+					},
+					'100%': {
+            zIndex: 1000,
+						left: 0,
+						right: 0,
+						margin: '0 auto',
+            transform: 'translateY(0px)',
+					}
+				});
+
+				moveDown[this.dmt.getCollapseVerticalFillPercent()] = prefixAll({
+					left: 0,
+					right: 0,
+          transform: `translateY(${-visibleLayoutProp.top + 11}px)`,
+					margin: '0 auto'
+				});
+
+				this.keyframer.register("moveDown", moveDown);
+
+        applyCSSAnimation($title[0],
+          'moveDown',
+          '2000ms',
+          {fillMode: 'forwards'})
+        .then(() => {
+          $title.css({
+            position: 'static',
+            zIndex: 'auto'
+          });
+        });
+
+				/*******************************************************/
+
+			 let enterFromAbove = prefixAll({
+					'0%': {
+						opacity: 0,
+						transform: `translateY(${this.dmt.end.pos.y}px)`
+					},
+					'100%': {
+						opacity: 1,
+						transform: 'translateY(0)'
+					}
+				});
+
+				this.keyframer.register('enterFromAbove', enterFromAbove);
+
+				var enterFromBelow = prefixAll({
+					'0%': {
+						opacity: 0,
+						transform: `translateY(${this.dmt.end.pos.y + this.dmt.end.points[2].y}px)`
+					},
+					'100%': {
+						opacity: 1,
+						transform: 'translateY(0)'
+					}
+				});
+
+				this.keyframer.register("enterFromBelow", enterFromBelow);
+
+        this.$projects.each((projectIdx, project) => {
+          if (projectIdx == idx) {
+            return true;
+          } else if (projectIdx < idx) {
+            applyCSSAnimation(project,
+              'enterFromAbove',
+              this.closeAnimationTime,
+              {fillMode: 'forwards'})
+            .then(() => {
+              project.style[this.keyframer.animationProp.js] = '';
+            });
+          } else {
+            applyCSSAnimation(project,
+              'enterFromBelow',
+              this.closeAnimationTime,
+              {fillMode: 'forwards'})
+            .then(() => {
+              project.style[this.keyframer.animationProp.js] = '';
+            });
+          }
+        })
+      });
+		});
+	}
 }
