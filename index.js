@@ -11483,7 +11483,7 @@ var ProjectViewer = function () {
 
 										$project.data('isExpanded', true);
 
-										_this.$overlay.on('mousemove', function (e) {
+										$overlay.on('mousemove', function (e) {
 												e.stopImmediatePropagation();
 										});
 
