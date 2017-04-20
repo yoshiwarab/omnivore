@@ -30,6 +30,8 @@ export default class ProjectViewer {
     this.closeAnimationTime = '2000ms';
     this.timingFunction = 'ease';
 
+    this.isShowing = false;
+
     this.initEvents();
   }
 
@@ -52,6 +54,8 @@ export default class ProjectViewer {
 				}
 
 				$project.data('isExpanded', true);
+
+        this.isShowing = true;
 
         // Don't show scrollbar on expansion
         this.$body.css('overflow-y', 'hidden');
@@ -268,6 +272,7 @@ export default class ProjectViewer {
               {fillMode: 'forwards'})
             .then(() => {
               project.style[this.keyframer.animationProp.js] = '';
+              this.isShowing = false;
             });
           }
         })
