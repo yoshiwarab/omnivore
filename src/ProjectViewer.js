@@ -98,8 +98,6 @@ export default class ProjectViewer {
 					})
 				}
 
-        console.log(-titleLayoutProp.top + 16);
-
 				moveUp[this.dmt.getExpandVerticalFillPercent()] = prefixAll({
 					left: 0,
 					right: 0,

@@ -1,6 +1,5 @@
 var moment = require('moment-timezone');
 import ProjectViewer from './ProjectViewer';
-// var expand = require('./projectExpandMask.js');
 
 var theDate;
 var colorNYC = {r:154, g:184, b:206};

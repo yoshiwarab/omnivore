@@ -32,7 +32,6 @@ export default class Slider {
 	}
 
 	init() {
-		console.log('HELLO');
 		for (let slide of this.dom.slides) {
 			slide.style.zIndex = 10;
 		}
@@ -48,7 +47,6 @@ export default class Slider {
 	events() {
 		this.processScrollEvent = (e) => {
 			e.preventDefault();
-			console.log("PROCESSING SCROLL");
 			if (this.working) return;
 
 			this.working = true;
@@ -71,7 +69,6 @@ export default class Slider {
 
 	destroy() {
 		if (this.working) {
-			console.log("TRYING TO DESTROY BUT STILL WORKING");
 			this.mustDestroy = true;
 			return;
 		}
@@ -100,7 +97,6 @@ export default class Slider {
 	* Update next global index
 	*/
 	updateNext() {
-		console.log("UPDATING NEXT");
 		this.next = (this.current + 1) % this.length;
 		this.process();
 	}
@@ -109,7 +105,6 @@ export default class Slider {
 	* Update next global index
 	*/
 	updatePrevious() {
-		console.log("UPDATING PREVIOUS");
 		this.next--;
 		if (this.next < 0)
 			this.next = this.length - 1;
@@ -131,17 +126,13 @@ export default class Slider {
 			'2000ms',
 			{fillMode: 'forwards'})
 		.then(() => {
-			console.log(this);
 			this.dom.current.style.zIndex = 10;
 			DOMUtils.removeClass(this.dom.current, 'showing');
 			DOMUtils.addClass(this.dom.next, 'showing');
 			this.dom.current = this.dom.next;
 			this.current = this.next;
 			this.working = false;
-			console.log(this.mustDestroy);
 			if (this.mustDestroy) {
-				console.log("HELLOO");
-				console.log(this.mustDestroy);
 				this.destroy();
 			}
 		});
