@@ -40,7 +40,6 @@ export default class Slider {
 		this.dom.current = this.dom.slides[this.current];
 		this.dom.next = this.dom.slides[this.current + 1];
 		this.dom.current.style.zIndex = 30;
-		this.dom.next.style.zIndex = 20;
 		this.events();
 	}
 
@@ -105,7 +104,7 @@ export default class Slider {
 	* Update next global index
 	*/
 	updatePrevious() {
-		this.next--;
+		this.next = this.current - 1;
 		if (this.next < 0)
 			this.next = this.length - 1;
 		this.process();
