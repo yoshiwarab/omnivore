@@ -40,14 +40,12 @@ ready(function () {
 	}
 
 	function followCursor() {
-		if (!projectViewer.isShowing) {
-			var body = document.querySelector('body');
-			var percentX = mouseX / outerWidth(body);
-			var cursorR = interpolate(colorLA.r, colorNYC.r, percentX);
-			var cursorG = interpolate(colorLA.g, colorNYC.g, percentX);
-			var cursorB = interpolate(colorLA.b, colorNYC.b, percentX);
-			body.style.background = '-webkit-radial-gradient(' + mouseX + 'px ' + mouseY + 'px, 1000px 1000px, rgb(' + cursorR + ',' + cursorG + ',' + cursorB + ') 0%,rgb(237,243,216) 100%)'
-		}
+		var body = document.querySelector('body');
+		var percentX = mouseX / outerWidth(body);
+		var cursorR = interpolate(colorLA.r, colorNYC.r, percentX);
+		var cursorG = interpolate(colorLA.g, colorNYC.g, percentX);
+		var cursorB = interpolate(colorLA.b, colorNYC.b, percentX);
+		body.style.background = '-webkit-radial-gradient(' + mouseX + 'px ' + mouseY + 'px, 1000px 1000px, rgb(' + cursorR + ',' + cursorG + ',' + cursorB + ') 0%,rgb(237,243,216) 100%)'
 	}
 
 	setInterval(updateGradient, speedTime);
