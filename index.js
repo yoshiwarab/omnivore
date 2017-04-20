@@ -11457,6 +11457,8 @@ var ProjectViewer = function () {
 				this.closeAnimationTime = '2000ms';
 				this.timingFunction = 'ease';
 
+				this.isShowing = false;
+
 				this.initEvents();
 		}
 
@@ -11482,6 +11484,8 @@ var ProjectViewer = function () {
 										}
 
 										$project.data('isExpanded', true);
+
+										_this.isShowing = true;
 
 										// Don't show scrollbar on expansion
 										_this.$body.css('overflow-y', 'hidden');
@@ -11678,6 +11682,7 @@ var ProjectViewer = function () {
 												} else {
 														(0, _CSSAnimationChainer.applyCSSAnimation)(project, 'enterFromBelow', _this.closeAnimationTime, { fillMode: 'forwards' }).then(function () {
 																project.style[_this.keyframer.animationProp.js] = '';
+																_this.isShowing = false;
 														});
 												}
 										});
@@ -11777,6 +11782,7 @@ var colorLA = { r: 243, g: 129, b: 153 };
 var mouseX, mouseY, timeIncrementer;
 var speedTime = 100; //milliseconds to increment
 var currentColorWheel = [[45, 57, 89], [97, 112, 164], [222, 205, 242], [255, 229, 210], [255, 224, 134], [255, 229, 251], [210, 196, 234], [82, 98, 146]];
+var projectViewer;
 
 function ready(fn) {
 	if (document.readyState != 'loading') {
@@ -11789,6 +11795,9 @@ function ready(fn) {
 ready(function () {
 	var timeIncrementer = parseInt(moment().format('X'));
 	var body = document.querySelector('body');
+
+	projectViewer = new _ProjectViewer2.default();
+
 	mouseX = 0;
 	mouseY = 0;
 	body.addEventListener('mousemove', function (e) {
@@ -11806,12 +11815,14 @@ ready(function () {
 	}
 
 	function followCursor() {
-		var body = document.querySelector('body');
-		var percentX = mouseX / outerWidth(body);
-		var cursorR = interpolate(colorLA.r, colorNYC.r, percentX);
-		var cursorG = interpolate(colorLA.g, colorNYC.g, percentX);
-		var cursorB = interpolate(colorLA.b, colorNYC.b, percentX);
-		body.style.background = '-webkit-radial-gradient(' + mouseX + 'px ' + mouseY + 'px, 1000px 1000px, rgb(' + cursorR + ',' + cursorG + ',' + cursorB + ') 0%,rgb(237,243,216) 100%)';
+		if (!projectViewer.isShowing) {
+			var body = document.querySelector('body');
+			var percentX = mouseX / outerWidth(body);
+			var cursorR = interpolate(colorLA.r, colorNYC.r, percentX);
+			var cursorG = interpolate(colorLA.g, colorNYC.g, percentX);
+			var cursorB = interpolate(colorLA.b, colorNYC.b, percentX);
+			body.style.background = '-webkit-radial-gradient(' + mouseX + 'px ' + mouseY + 'px, 1000px 1000px, rgb(' + cursorR + ',' + cursorG + ',' + cursorB + ') 0%,rgb(237,243,216) 100%)';
+		}
 	}
 
 	setInterval(updateGradient, speedTime);
@@ -11850,7 +11861,6 @@ ready(function () {
 	}
 
 	// expand.init();
-	new _ProjectViewer2.default();
 });
 
 },{"./ProjectViewer":30,"moment-timezone":21}],33:[function(require,module,exports){
