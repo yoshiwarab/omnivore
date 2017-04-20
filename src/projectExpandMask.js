@@ -1,10 +1,12 @@
 // var $ = require('jquery');
-window.jQuery = window.$ = require('jquery');
-var velocity = require('velocity-animate');
+// window.jQuery = window.$ = require('jquery');
 var SAT = require('sat');
 var CSSKeyframer = require('css-keyframer');
 var Prefixer = require('inline-style-prefixer');
 var Slider = require('./slider.js');
+
+// TODO: Create apply animation function which applies an animation to an elemenent which returns
+// a promise that resolves when the animation is complete.  It should take time, timing function, and fill mode as params
 
 module.exports = (function() {
 

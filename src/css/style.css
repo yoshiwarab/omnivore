@@ -75,7 +75,7 @@ body {
 	text-indent: 0px;
 }
 
-.slides{
+.slides {
 	position: absolute;
 	height: 100%;
 	width: 100%;
@@ -83,7 +83,6 @@ body {
 	left: 0;
 	padding: 0px;
 	margin: 0px;
-	list-style-type: none;
 }
 
 .slide {
