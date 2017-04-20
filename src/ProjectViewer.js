@@ -29,7 +29,7 @@ export default class ProjectViewer {
     this.openAnimationTime = '2000ms';
     this.closeAnimationTime = '2000ms';
     this.timingFunction = 'ease';
-    
+
     this.initEvents();
   }
 
@@ -53,7 +53,7 @@ export default class ProjectViewer {
 
 				$project.data('isExpanded', true);
 
-        this.$overlay.on('mousemove', (e) => {
+        $overlay.on('mousemove', (e) => {
           e.stopImmediatePropagation();
         })
 
